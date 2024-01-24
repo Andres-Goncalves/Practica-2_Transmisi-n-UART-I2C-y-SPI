@@ -3,8 +3,7 @@ from ssd1306 import SSD1306_I2C
 from utime import sleep_ms
 from time import localtime
 
-
-#led
+#LED
 led = Pin("LED",Pin.OUT)
 lt = False
 
@@ -16,19 +15,21 @@ def led_t():
     else:
         led.value(1)
         lt = True
+#--------------------------
 
-#UART
+#Conexión UART
 uart = UART(0, baudrate=100000, tx=Pin(0), rx=Pin(1),timeout=1)
 
-#pantalla
+#Inicializar pantalla
 WIDTH=128
 HEIGHT=64
 i2c = I2C(1, scl = Pin(15), sda = Pin(14), freq=400000)
 oled = SSD1306_I2C(WIDTH, HEIGHT,i2c)
+#--------------------------------------------------------
 
+#Recibir datos
 datos = []
 
-#recibir datos
 while True:
     if uart.any():
         data = str(uart.readline(), 'utf-8')
@@ -40,11 +41,10 @@ while True:
             break
         
         datos.append(int(data))
+#--------------------------------------------
         
-print(datos)
+#Graficar
 X = 48
-
-#graficar
 fecha = localtime()
 oled.fill(0)
 oled.text("{dia:02d}/{mes:02d}/{año:04d} {hora:02d}:{minuto:02d}".format(año = fecha[0],mes = fecha[1],dia = fecha[2],hora = fecha[3],minuto = fecha[4]),0,0)

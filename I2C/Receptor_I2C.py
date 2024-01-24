@@ -16,55 +16,52 @@ def led_t():
     else:
         led.value(1)
         lt = True
+#--------------------------
 
-#pantalla
+#Inicializar pantalla
 WIDTH=128
 HEIGHT=64
 i2c = I2C(1, scl = Pin(15), sda = Pin(14), freq=400000)
 oled = SSD1306_I2C(WIDTH, HEIGHT,i2c)
+#--------------------------------------------------------
 
-#I2C
+#Conexión I2C
 i2c = I2C(0, scl=Pin(17), sda=Pin(16), freq=400000)
 s_i2c = i2c_slave(0,sda=16,scl=17,slaveAddress=0x41)
 
+
+#Receptor datos
 fin = False
 datos = []
 
-#receptor datos
-try:
+while True:
+    
+    if fin:
+        break
+    
+    aux = ""
+    
     while True:
+        paquete = s_i2c.get()
+        dato = chr(int(hex(paquete), 16))       
         
-        if fin:
+        if dato == "@":
+            datos.append(int(aux))
             break
         
-        aux = ""
+        if dato == "^":
+            print("Terminar conexion")
+            led.value(0)
+            fin = True
+            break
         
-        while True:
-            paquete = s_i2c.get()
-            dato = chr(int(hex(paquete), 16))       
-            
-            if dato == "@":
-                print("Valor recibido:", aux)
-                datos.append(int(aux))
-                break
-            
-            if dato == "^":
-                print("Terminar conexion")
-                led.value(0)
-                fin = True
-                break
-            
-            aux += dato
-            
-        led_t()
+        aux += dato
         
-except KeyboardInterrupt:
-    pass
+    led_t()
+#--------------------------------------------
 
-print(datos)
+#Graficar
 X = 48
-
-#graficar
 fecha = localtime()
 oled.fill(0)
 oled.text("{dia:02d}/{mes:02d}/{año:04d} {hora:02d}:{minuto:02d}".format(año = fecha[0],mes = fecha[1],dia = fecha[2],hora = fecha[3],minuto = fecha[4]),0,0)

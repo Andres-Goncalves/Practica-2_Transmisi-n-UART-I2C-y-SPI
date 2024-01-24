@@ -4,11 +4,11 @@ from utime import sleep_ms
 from uos import VfsFat, mount
 from os import listdir
 
-#led
+#LED
 led = Pin("LED", Pin.OUT)
 lt = False
 
-def led_t():
+def led_t(): 
     global lt
     if lt:
         led.value(0)
@@ -16,8 +16,9 @@ def led_t():
     else:
         led.value(1)
         lt = True
+#---------------------------
 
-#SPI
+#SD
 cs = Pin(13)
 spi = SPI(1,
           baudrate=1000000,
@@ -26,18 +27,19 @@ spi = SPI(1,
           sck = Pin(10),
           mosi = Pin(11),
           miso = Pin(12))
-#SD
+
 sd = SDCard(spi, cs)
 vol = VfsFat(sd)
 mount(vol, "/sd")
+#---------------------------
 
-#UART
+#Conexión UART
 uart = UART(0, baudrate=100000, tx=Pin(0), rx=Pin(1))
 
+#Recopilar datos de la SD
 datos = []
 cont = 0
 
-#Recopilar datos
 for ruta in listdir("/sd"):
     if cont >= 14:
         break
@@ -55,16 +57,16 @@ for ruta in listdir("/sd"):
         
         datos.insert(0,cruces)
         cont += 1
+#-----------------------------------------
 
-#eviar datos
+#Enviar datos
 for dato in datos:
     uart.write(str(dato))
-    print("Valor enviado: " + str(dato))
     sleep_ms(100)
     led_t()
     
 uart.write("Terminar conexion")
 led.value(0)
+#---------------------------
 
 print("Terminar conexion")
-print(datos)

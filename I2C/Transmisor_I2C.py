@@ -4,7 +4,7 @@ from utime import sleep_ms
 from uos import VfsFat, mount
 from os import listdir
 
-#led
+#LED
 led = Pin("LED", Pin.OUT)
 lt = False
 
@@ -16,8 +16,9 @@ def led_t():
     else:
         led.value(1)
         lt = True
+#---------------------------
 
-#SPI
+#SD
 cs = Pin(13)
 spi = SPI(1,
           baudrate=1000000,
@@ -26,21 +27,20 @@ spi = SPI(1,
           sck = Pin(10),
           mosi = Pin(11),
           miso = Pin(12))
-#SD
+
 sd = SDCard(spi, cs)
 vol = VfsFat(sd)
 mount(vol, "/sd")
+#---------------------------
 
-#I2C
+#Conexión I2C
 i2c = I2C(0, scl=Pin(17), sda=Pin(16), freq=400000)
 direccion = 0x41
-#sleep_ms(100)
-#print(i2c.scan())
 
+#Recopilar datos de la SD
 datos = []
 cont = 0
 
-#Recopilar datos
 for ruta in listdir("/sd"):
     if cont >= 14:
         break
@@ -58,12 +58,12 @@ for ruta in listdir("/sd"):
         
         datos.insert(0,cruces)
         cont += 1
+#-----------------------------------------
 
 #eviar datos
 for dato in datos:
     paquete = bytearray(str(dato)+"@", "utf-8")
     i2c.writeto(direccion, paquete)
-    print("Valor enviado: " + str(dato))
     sleep_ms(100)
     led_t()
     
@@ -71,4 +71,3 @@ i2c.writeto(direccion, bytearray("^", "utf-8"))
 led.value(0)
 
 print("Terminar conexion")
-print(datos)

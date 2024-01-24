@@ -6,7 +6,7 @@ from uos import VfsFat, mount
 from os import listdir
 import array
 
-#led
+#LED
 led = Pin("LED", Pin.OUT)
 lt = False
 
@@ -18,6 +18,7 @@ def led_t():
     else:
         led.value(1)
         lt = True
+#---------------------------
 
 #SD
 cs = Pin(13)
@@ -32,15 +33,15 @@ spi = SPI(1,
 sd = SDCard(spi, cs)
 vol = VfsFat(sd)
 mount(vol, "/sd")
+#---------------------------
 
 #SPI
 master = SPI_Master(mosi_pin=3, miso_pin=4, sck_pin=2, csel_pin=5, spi_words=1, F_SPI=1_000_000)
 
-
+#Recopilar datos de la SD
 datos = []
 cont = 0
 
-#Recopilar datos
 for ruta in listdir("/sd"):
     if cont >= 14:
         break
@@ -58,16 +59,17 @@ for ruta in listdir("/sd"):
         
         datos.insert(0,cruces)
         cont += 1
+#-----------------------------------------
+        
 #sync
 inicio = Pin(18,Pin.IN)
 while inicio.value() == 0:
     sleep_ms(1)
 
-#eviar datos
+#Enviar datos
 for dato in datos:
     paquete = array.array("I", [int("0x"+"{:04d}".format(dato).encode("utf-8").hex())])
     master.write(paquete)
-    print("Valor enviado:", dato)
     sleep_ms(100)
     led_t()
 
@@ -76,5 +78,3 @@ master.write(paquete)
 led.value(0)
 
 print("Terminar conexion")
-print(datos)
-
